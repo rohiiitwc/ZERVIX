@@ -37,7 +37,7 @@ export default async function AboutPage() {
           createdAt: n.createdAt.toISOString(),
         }))}
       >
-        <AboutClient authenticated />
+        <AboutClient />
       </AppShell>
     );
   }
@@ -62,23 +62,17 @@ export default async function AboutPage() {
               About
             </Link>
             <Link
-              href="/login"
-              className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-violet-400/60 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
+              href="/workspace"
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 hover:opacity-95 shadow-[0_0_24px_rgba(139,92,246,0.4)] transition"
             >
-              Get Started
+              Open Workspace
             </Link>
           </nav>
         </div>
       </header>
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10">
-        <AboutClient authenticated={false} />
+        <AboutClient />
       </main>
     </div>
   );

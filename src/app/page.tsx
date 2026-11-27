@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   Lock,
   Cpu,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 import { HolographicShield } from "@/components/dashboard/HolographicShield";
 import { ZervixLogo } from "@/components/brand/ZervixLogo";
-import { getCurrentUser } from "@/lib/security/auth";
+
 
 const CATEGORIES = [
   { name: "Email Addresses", badge: "EMAIL_01", color: "text-cyan-300 border-cyan-400/30" },
@@ -23,11 +22,6 @@ const CATEGORIES = [
 ];
 
 export default async function LandingPage() {
-  const user = await getCurrentUser();
-  if (user) {
-    redirect("/welcome");
-  }
-
   return (
     <div className="relative z-10 min-h-screen flex flex-col bg-transparent text-[var(--text-primary)]">
       {/* Top Navbar */}
@@ -46,19 +40,13 @@ export default async function LandingPage() {
               href="/about"
               className="px-3.5 py-2 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] border border-transparent transition"
             >
-              About
+              About & Guide
             </Link>
             <Link
-              href="/login"
-              className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-violet-400/60 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
+              href="/workspace"
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 hover:opacity-95 shadow-[0_0_24px_rgba(139,92,246,0.4)] transition"
             >
-              Get Started
+              Open Workspace
             </Link>
           </nav>
         </div>
@@ -88,17 +76,17 @@ export default async function LandingPage() {
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <Link
-                href="/login"
+                href="/workspace"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-semibold text-sm shadow-[0_0_28px_rgba(139,92,246,0.45)] hover:opacity-95 transition"
               >
                 Launch Security Command Center
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/register"
+                href="/about"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl zervix-glass text-sm font-medium hover:border-cyan-400/50 transition"
               >
-                Create Analyst Account
+                How to Use & Guide
               </Link>
             </div>
 

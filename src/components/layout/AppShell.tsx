@@ -220,7 +220,7 @@ export function AppShell({
       // Ignore storage restrictions
     }
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 
