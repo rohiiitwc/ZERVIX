@@ -19,12 +19,12 @@ import {
   Search,
   Sun,
   Moon,
-  LogOut,
   ChevronLeft,
   ChevronRight,
   User as UserIcon,
   CheckCheck,
   BookOpen,
+  Home,
 } from "lucide-react";
 import { FloatingAssistant } from "@/components/assistant/FloatingAssistant";
 import { ZervixLogo } from "@/components/brand/ZervixLogo";
@@ -211,17 +211,6 @@ export function AppShell({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ markAll: true }),
     });
-  }
-
-  async function handleLogout() {
-    try {
-      window.sessionStorage.removeItem("zervix_welcome_ack");
-    } catch {
-      // Ignore storage restrictions
-    }
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
   }
 
   function handleSearchSubmit(e: React.FormEvent) {
@@ -658,14 +647,14 @@ export function AppShell({
                             Admin Console
                           </Link>
                         ) : null}
-                        <button
-                          type="button"
-                          onClick={() => void handleLogout()}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-red-400 hover:bg-red-500/10 mt-1"
+                        <Link
+                          href="/"
+                          onClick={() => setProfileOpen(false)}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 mt-1"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
-                          Sign Out
-                        </button>
+                          <Home className="w-3.5 h-3.5 text-cyan-400" />
+                          Return to Home
+                        </Link>
                       </motion.div>
                     ) : null}
                   </AnimatePresence>
