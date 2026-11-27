@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { apiError, parseJsonBody } from "@/lib/api/http";
@@ -119,19 +120,13 @@ export async function POST(request: Request) {
   let demoUsage: { used: number; max: number; remaining: number } | undefined;
   if (isDemoAccount) {
     const nextDemoUses = Math.min(MAX_DEMO_USES, currentDemoUses + 1);
-    const cookieStore = await cookies();
-    cookieStore.set(DEMO_COOKIE_NAME, encodeDemoUsesCookie(nextDemoUses), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 365 * 24 * 60 * 60,
-    });
+    // Set demo usage cookie on response
     demoUsage = {
       used: nextDemoUses,
       max: MAX_DEMO_USES,
       remaining: Math.max(0, MAX_DEMO_USES - nextDemoUses),
     };
+    // We'll attach the cookie to the response after building it.
   }
 
   await logSecurityEvent({
@@ -143,7 +138,7 @@ export async function POST(request: Request) {
     userAgent,
   });
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     user: {
       id: user.id,
       email: user.email,
@@ -154,4 +149,14 @@ export async function POST(request: Request) {
     },
     ...(demoUsage ? { demoUsage } : {}),
   });
+  if (isDemoAccount && demoUsage) {
+    response.cookies.set(DEMO_COOKIE_NAME, encodeDemoUsesCookie(demoUsage.used), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 365 * 24 * 60 * 60,
+    });
+  }
+  return response;
 }
