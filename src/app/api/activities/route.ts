@@ -50,10 +50,11 @@ const recordActivitySchema = z
   .strict();
 
 export async function GET(request: NextRequest) {
-  const sessionData = await getSessionAndUser();
-  if (!sessionData) {
-    return apiError(401, "UNAUTHORIZED", "Authentication required.");
-  }
+  try {
+    const sessionData = await getSessionAndUser();
+    if (!sessionData) {
+      return apiError(401, "UNAUTHORIZED", "Authentication required.");
+    }
 
   const sp = request.nextUrl.searchParams;
   const page = Math.max(1, Number(sp.get("page") ?? 1) || 1);
@@ -219,6 +220,10 @@ export async function GET(request: NextRequest) {
       },
     }
   );
+  } catch (err) {
+    console.error("ACTIVITIES GET ERROR:", err);
+    return apiError(500, "INTERNAL_ERROR", "Failed to fetch activities: " + (err instanceof Error ? err.message : String(err)));
+  }
 }
 
 export async function POST(request: Request) {
