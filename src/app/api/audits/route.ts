@@ -185,12 +185,24 @@ export async function DELETE(request: NextRequest) {
     return apiError(401, "UNAUTHORIZED", "Authentication required.");
   }
 
-  const parsed = await parseJsonBody(request, deleteAuditSchema);
-  if (!parsed.ok) return parsed.response;
+  let auditId = request.nextUrl.searchParams.get("auditId") || undefined;
+  let deleteAll =
+    request.nextUrl.searchParams.get("clearAll") === "true" ||
+    request.nextUrl.searchParams.get("deleteAll") === "true";
+
+  if (!auditId && !deleteAll) {
+    const parsed = await parseJsonBody(request, deleteAuditSchema);
+    if (parsed.ok) {
+      auditId = parsed.data.auditId;
+      deleteAll = Boolean(parsed.data.deleteAll);
+    } else {
+      return parsed.response;
+    }
+  }
 
   const userId = sessionData.user.id;
 
-  if (parsed.data.deleteAll) {
+  if (deleteAll) {
     const existingLogs = await prisma.auditLog.findMany({
       where: { userId },
       select: { id: true, activityId: true },
@@ -220,8 +232,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ deletedCount: existingLogs.length });
   }
 
+  if (!auditId) {
+    return apiError(400, "BAD_REQUEST", "Specify auditId or deleteAll: true.");
+  }
+
   const existing = await prisma.auditLog.findFirst({
-    where: { id: parsed.data.auditId, userId },
+    where: { id: auditId, userId },
   });
 
   if (!existing) {
