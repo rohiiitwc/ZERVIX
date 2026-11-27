@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,7 +19,6 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [demoUsed, setDemoUsed] = useState<number>(0);
@@ -76,52 +74,71 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginFormValues) {
     setServerError(null);
+    let res: Response;
+    let data: {
+      user?: unknown;
+      demoUsage?: { used: number; max: number; remaining: number };
+      error?: { code?: string; message?: string };
+    } | null = null;
+
     try {
-      const res = await fetch("/api/auth/login", {
+      res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        if (data?.error?.code === "DEMO_LIMIT_REACHED") {
-          setDemoUsed(MAX_DEMO_USES);
-          try {
-            window.localStorage.setItem(DEMO_USES_STORAGE_KEY, String(MAX_DEMO_USES));
-          } catch {
-            // Ignore storage errors
-          }
-        }
-        setServerError(data?.error?.message ?? "Unable to sign in.");
-        return;
+      const text = await res.text();
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
       }
-      if (data?.demoUsage && typeof data.demoUsage.used === "number") {
-        const nextCount = Math.min(MAX_DEMO_USES, data.demoUsage.used);
-        setDemoUsed(nextCount);
+    } catch (networkErr) {
+      console.error("Sign-in network error:", networkErr);
+      setServerError("Network error while contacting the server. Please verify your connection.");
+      return;
+    }
+
+    if (!res.ok) {
+      if (data?.error?.code === "DEMO_LIMIT_REACHED") {
+        setDemoUsed(MAX_DEMO_USES);
         try {
-          window.localStorage.setItem(DEMO_USES_STORAGE_KEY, String(nextCount));
+          window.localStorage.setItem(DEMO_USES_STORAGE_KEY, String(MAX_DEMO_USES));
         } catch {
           // Ignore storage errors
         }
       }
-      const nextParam =
-        typeof window !== "undefined"
-          ? new URLSearchParams(window.location.search).get("next")
-          : null;
-      const welcomeUrl =
-        nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
-          ? `/welcome?next=${encodeURIComponent(nextParam)}`
-          : "/welcome";
+      setServerError(data?.error?.message ?? "Unable to sign in. Please verify your credentials.");
+      return;
+    }
+
+    if (data?.demoUsage && typeof data.demoUsage.used === "number") {
+      const nextCount = Math.min(MAX_DEMO_USES, data.demoUsage.used);
+      setDemoUsed(nextCount);
       try {
-        window.sessionStorage.removeItem("zervix_welcome_ack");
+        window.localStorage.setItem(DEMO_USES_STORAGE_KEY, String(nextCount));
       } catch {
         // Ignore storage errors
       }
-      router.push(welcomeUrl);
-      router.refresh();
-    } catch {
-      setServerError("Network error while signing in.");
     }
+
+    const nextParam =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("next")
+        : null;
+    const welcomeUrl =
+      nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+        ? `/welcome?next=${encodeURIComponent(nextParam)}`
+        : "/welcome";
+
+    try {
+      window.sessionStorage.removeItem("zervix_welcome_ack");
+    } catch {
+      // Ignore storage errors
+    }
+
+    // Full page navigation ensures session cookie is immediately active
+    window.location.assign(welcomeUrl);
   }
 
   function fillDemo(email: string, password: string) {
