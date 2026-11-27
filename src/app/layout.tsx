@@ -43,7 +43,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[var(--bg-main)] text-[var(--text-primary)] zervix-ambient-bg">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[var(--bg-main)] text-[var(--text-primary)] zervix-ambient-bg">
         <Holographic3DBackground />
         <HolographicSectionFX />
         {children}

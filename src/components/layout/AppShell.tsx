@@ -90,13 +90,7 @@ export function AppShell({
     name?: string;
     avatarColor?: string;
   }>({});
-  const [isLight, setIsLight] = useState<boolean>(() => {
-    if (typeof document === "undefined") return false;
-    const ds = document.documentElement.dataset.theme;
-    if (ds === "light" || ds === "dark") return ds === "light";
-    const meta = document.querySelector('meta[name="color-scheme"]');
-    return meta?.getAttribute("content") === "light";
-  });
+  const [isLight, setIsLight] = useState<boolean>(false);
 
   const displayName = liveOverrides.name ?? user.name;
   const displayAvatarColor = liveOverrides.avatarColor ?? user.avatarColor ?? "#8B5CF6";
@@ -105,6 +99,15 @@ export function AppShell({
   const rightScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const syncId = window.requestAnimationFrame(() => {
+      const ds = document.documentElement.dataset.theme;
+      if (ds === "light" || ds === "dark") {
+        setIsLight(ds === "light");
+      } else {
+        const meta = document.querySelector('meta[name="color-scheme"]');
+        setIsLight(meta?.getAttribute("content") === "light");
+      }
+    });
     const onUserUpdated = (e: Event) => {
       const detail = (e as CustomEvent<{ name?: string; avatarColor?: string }>).detail;
       if (detail) {
@@ -137,6 +140,7 @@ export function AppShell({
     window.addEventListener("zervix:theme-updated", onThemeUpdated);
     mq?.addEventListener?.("change", onSystemChange);
     return () => {
+      window.cancelAnimationFrame(syncId);
       window.removeEventListener("zervix:user-updated", onUserUpdated);
       window.removeEventListener("zervix:theme-updated", onThemeUpdated);
       mq?.removeEventListener?.("change", onSystemChange);
@@ -467,6 +471,7 @@ export function AppShell({
                     />
                     <input
                       type="search"
+                      suppressHydrationWarning
                       value={onSearchChange ? searchValue ?? "" : localSearch}
                       onChange={(e) => {
                         setLocalSearch(e.target.value);
@@ -484,6 +489,7 @@ export function AppShell({
                 {/* Theme Toggle */}
                 <motion.button
                   type="button"
+                  suppressHydrationWarning
                   onClick={toggleTheme}
                   whileHover={{ scale: 1.07 }}
                   whileTap={{ scale: 0.92 }}
@@ -514,6 +520,7 @@ export function AppShell({
                 <div className="relative">
                   <motion.button
                     type="button"
+                    suppressHydrationWarning
                     whileHover={{ scale: 1.07 }}
                     whileTap={{ scale: 0.92 }}
                     transition={{ type: "spring", stiffness: 450, damping: 24 }}
@@ -591,6 +598,7 @@ export function AppShell({
                 <div className="relative">
                   <motion.button
                     type="button"
+                    suppressHydrationWarning
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
                     transition={{ type: "spring", stiffness: 420, damping: 26 }}
