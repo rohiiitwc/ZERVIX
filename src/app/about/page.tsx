@@ -5,6 +5,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { AboutClient } from "@/components/about/AboutClient";
 import { ZervixLogo } from "@/components/brand/ZervixLogo";
 
+export const dynamic = "force-dynamic";
+
 export default async function AboutPage() {
   const user = await getCurrentUser();
 

@@ -1,6 +1,8 @@
 import { WelcomeClient } from "@/components/auth/WelcomeClient";
 import { requirePageUser } from "@/lib/security/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function WelcomePage({
   searchParams,
 }: {
