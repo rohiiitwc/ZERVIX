@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="zvxOuter" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="48%" stop-color="#D946EF" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <linearGradient id="zvxTopBlade" x1="16" y1="16" x2="48" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="55%" stop-color="#C4B5FD" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <linearGradient id="zvxBottomBlade" x1="16" y1="30" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22D3EE" />
+      <stop offset="55%" stop-color="#A855F7" />
+      <stop offset="100%" stop-color="#F0ABFC" />
+    </linearGradient>
+    <radialGradient id="zvxCoreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.48" />
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Asymmetric Beveled Octagon Vault Silhouette -->
+  <path
+    d="M22 4H46L60 18V42L42 60H18L4 46V22L22 4Z"
+    fill="#090913"
+    stroke="url(#zvxOuter)"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Inner Faceted Prism Grid Lines -->
+  <path
+    d="M23 9H44L55 20V41L41 55H20L9 44V23L23 9Z"
+    fill="url(#zvxCoreGlow)"
+    stroke="url(#zvxOuter)"
+    stroke-opacity="0.32"
+    stroke-width="1"
+    stroke-linejoin="round"
+  />
+
+  <!-- Interlocking Dual-Shard Z Monogram -->
+  <path
+    d="M19 21H45L36 30H24L19 21Z"
+    fill="url(#zvxTopBlade)"
+  />
+  <path
+    d="M28 34H40L45 43H19L28 34Z"
+    fill="url(#zvxBottomBlade)"
+  />
+  <path
+    d="M44 21L20 43"
+    stroke="#FFFFFF"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+
+  <!-- Central Zero-Knowledge Quantum Node -->
+  <path
+    d="M32 25.5L38.5 32L32 38.5L25.5 32L32 25.5Z"
+    fill="#090913"
+    stroke="#22D3EE"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <circle cx="32" cy="32" r="2.6" fill="#22D3EE" />
+
+  <!-- Corner Micro-Vertices -->
+  <circle cx="46" cy="4" r="2" fill="#22D3EE" />
+  <circle cx="18" cy="60" r="2" fill="#D946EF" />
+</svg>

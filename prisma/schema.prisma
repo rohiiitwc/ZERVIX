@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum ThemePreference {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
+enum RedactionMode {
+  FULL_MASK
+  PARTIAL_MASK
+  PSEUDONYMIZE
+}
+
+enum DocumentType {
+  TXT
+  CSV
+  TEXT
+}
+
+enum ProcessingStatus {
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum ExportFormat {
+  NONE
+  COPY
+  TXT
+  CSV
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  SECURITY
+}
+
+enum SecuritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SubscriptionTier {
+  FREE_COMMUNITY
+  PRO_SHIELD
+  ENTERPRISE_VAULT
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String
+  passwordHash  String
+  role          Role          @default(USER)
+  status        AccountStatus @default(ACTIVE)
+  avatarColor   String        @default("#8B5CF6")
+  emailVerified Boolean       @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  preferences   UserPreference?
+  subscription  Subscription?
+  sessions      Session[]
+  resetTokens   PasswordResetToken[]
+  activities    ProcessingActivity[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  securityEvents SecurityEvent[]
+
+  @@index([role, status])
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model UserPreference {
+  id                   String          @id @default(cuid())
+  userId               String          @unique
+  theme                ThemePreference @default(DARK)
+  defaultRedactionMode RedactionMode   @default(PARTIAL_MASK)
+  enabledCategories    String[]        @default(["EMAIL", "PHONE", "IPV4", "PAN", "AADHAAR", "CREDIT_CARD"])
+  emailNotifications   Boolean         @default(true)
+  securityAlerts       Boolean         @default(true)
+  auditDigest          Boolean         @default(false)
+  compactMode          Boolean         @default(false)
+  dashboardWidgets     Json            @default("[\"kpis\",\"piiDistribution\",\"detectionTrends\",\"recentActivity\",\"categoryBreakdown\",\"holographicShield\"]")
+  updatedAt            DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  tier             SubscriptionTier @default(PRO_SHIELD)
+  status           String           @default("ACTIVE")
+  monthlyDocLimit  Int              @default(500)
+  renewsAt         DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Privacy-first: ONLY stores non-sensitive metadata & counts. NEVER raw text, files, PII values, or pseudonym maps.
+model ProcessingActivity {
+  id                    String           @id @default(cuid())
+  userId                String
+  fileName              String
+  fileType              DocumentType
+  fileSizeBytes         Int
+  rowCount              Int              @default(0)
+  sanitizationMode      RedactionMode
+  enabledCategories     String[]
+  totalDetections       Int
+  uniqueEntities        Int
+  categoryCounts        Json
+  luhnValidCards        Int              @default(0)
+  luhnInvalidCandidates Int              @default(0)
+  aadhaarValidFormat    Int              @default(0)
+  durationMs            Int
+  status                ProcessingStatus @default(COMPLETED)
+  exportedFormat        ExportFormat     @default(NONE)
+  createdAt             DateTime         @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  auditLogs AuditLog[]
+
+  @@index([userId, createdAt])
+  @@index([sanitizationMode, status])
+}
+
+model AuditLog {
+  id                String         @id @default(cuid())
+  userId            String
+  activityId        String?
+  action            String
+  fileName          String?
+  sanitizationMode  RedactionMode?
+  enabledCategories String[]       @default([])
+  detectionCount    Int            @default(0)
+  uniqueEntityCount Int            @default(0)
+  durationMs        Int            @default(0)
+  exportStatus      String         @default("NOT_EXPORTED")
+  metadata          Json?
+  createdAt         DateTime       @default(now())
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity ProcessingActivity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+}
+
+model SecurityEvent {
+  id          String           @id @default(cuid())
+  userId      String?
+  eventType   String
+  severity    SecuritySeverity @default(LOW)
+  description String
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime         @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([eventType, severity])
+}
+
+model ApplicationSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  category    String   @default("GENERAL")
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+}
+
+model PromptLogEntry {
+  id          String   @id @default(cuid())
+  phase       String
+  category    String
+  title       String
+  summary     String
+  promptNotes String
+  outcome     String
+  createdAt   DateTime @default(now())
+
+  @@index([phase, createdAt])
+}

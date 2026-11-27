@@ -1,0 +1,469 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark light;
+
+  /* ZERVIX Approved Palette (Dark default, Light optional) */
+  --bg-main: #050509;
+  --bg-sidebar: #080810;
+  --bg-secondary: #0b0c16;
+  --bg-card: #101120;
+  --bg-elevated: #15162a;
+
+  --accent-violet: #8b5cf6;
+  --accent-purple: #a855f7;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #22d3ee;
+  --accent-magenta: #d946ef;
+  --status-success: #22c55e;
+  --status-danger: #ef4444;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-subtle: rgba(139, 92, 246, 0.18);
+  --border-strong: rgba(34, 211, 238, 0.28);
+  --glass-bg: rgba(16, 17, 32, 0.78);
+  --glass-elevated: rgba(21, 22, 42, 0.88);
+  --scrollbar-thumb: rgba(139, 92, 246, 0.35);
+  --scrollbar-track: #080810;
+
+  accent-color: #8b5cf6;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]),
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]),
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-main: #eef2f9;
+  --bg-sidebar: rgba(255, 255, 255, 0.92);
+  --bg-secondary: #e3e9f5;
+  --bg-card: #ffffff;
+  --bg-elevated: #f8fafc;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-subtle: rgba(99, 102, 241, 0.22);
+  --border-strong: rgba(14, 116, 144, 0.36);
+  --glass-bg: rgba(255, 255, 255, 0.84);
+  --glass-elevated: rgba(255, 255, 255, 0.96);
+  --scrollbar-thumb: rgba(109, 40, 217, 0.35);
+  --scrollbar-track: #e3e9f5;
+}
+
+@theme inline {
+  --color-background: var(--bg-main);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html,
+  .zervix-scroll-pane {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Holographic glass surfaces (GPU-friendly for silky 120fps scrolling) */
+@layer components {
+  .zervix-glass {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      var(--glass-bg) 0%,
+      rgba(11, 12, 22, 0.92) 100%
+    );
+    border: 1px solid var(--border-subtle);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Futuristic pointer-following spotlight & kinetic click pulse across all sections */
+.zervix-glass::after,
+.zervix-gradient-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    380px circle at var(--zvx-mx, 50%) var(--zvx-my, 50%),
+    rgba(34, 211, 238, 0.14),
+    rgba(139, 92, 246, 0.08) 42%,
+    transparent 74%
+  );
+  transition: opacity 220ms ease-out;
+}
+
+:root[data-theme="light"] .zervix-glass::after,
+:root[data-theme="light"] .zervix-gradient-border::after {
+  background: radial-gradient(
+    360px circle at var(--zvx-mx, 50%) var(--zvx-my, 50%),
+    rgba(8, 145, 178, 0.09),
+    rgba(109, 40, 217, 0.06) 44%,
+    transparent 74%
+  );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zervix-glass[data-zvx-hover="true"],
+  .zervix-glass:hover {
+    border-color: rgba(34, 211, 238, 0.42);
+    box-shadow:
+      0 12px 34px -14px rgba(139, 92, 246, 0.32),
+      0 0 22px -6px rgba(34, 211, 238, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+  }
+
+  :root[data-theme="light"] .zervix-glass[data-zvx-hover="true"],
+  :root[data-theme="light"] .zervix-glass:hover {
+    border-color: rgba(109, 40, 217, 0.38);
+    box-shadow:
+      0 16px 36px -12px rgba(99, 102, 241, 0.18),
+      0 0 18px -6px rgba(8, 145, 178, 0.18);
+    transform: translateY(-2px);
+  }
+
+  .zervix-glass[data-zvx-hover="true"]::after,
+  .zervix-glass:hover::after,
+  .zervix-gradient-border[data-zvx-hover="true"]::after,
+  .zervix-gradient-border:hover::after {
+    opacity: 1;
+  }
+
+  .zervix-gradient-border[data-zvx-hover="true"],
+  .zervix-gradient-border:hover {
+    box-shadow:
+      0 14px 38px -12px rgba(139, 92, 246, 0.34),
+      0 0 24px -6px rgba(34, 211, 238, 0.22);
+  }
+
+  .zervix-fx-clicked {
+    animation: zervix-section-click-pulse 540ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes zervix-section-click-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(34, 211, 238, 0.52),
+      0 0 28px rgba(139, 92, 246, 0.4);
+  }
+  65% {
+    box-shadow:
+      0 0 0 8px rgba(34, 211, 238, 0),
+      0 12px 36px -10px rgba(139, 92, 246, 0.34);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(34, 211, 238, 0),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) .zervix-glass,
+:root[data-theme="light"] .zervix-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-color: rgba(99, 102, 241, 0.18);
+  box-shadow: 0 12px 32px -12px rgba(30, 41, 59, 0.1), 0 1px 2px rgba(30, 41, 59, 0.04);
+}
+
+/* Brand wordmark gradient (crisp dark/light contrast) */
+.zervix-brand-wordmark {
+  background-image: linear-gradient(90deg, #ffffff 0%, #ddd6fe 52%, #67e8f9 100%);
+}
+
+:root[data-theme="light"] .zervix-brand-wordmark {
+  background-image: linear-gradient(90deg, #312e81 0%, #6d28d9 52%, #0e7490 100%);
+}
+
+/* Sidebar active nav pill */
+.zervix-nav-active {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.28), rgba(168, 85, 247, 0.18), rgba(34, 211, 238, 0.05));
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.22);
+}
+
+:root[data-theme="light"] .zervix-nav-active {
+  background: linear-gradient(90deg, rgba(109, 40, 217, 0.12), rgba(139, 92, 246, 0.07), rgba(8, 145, 178, 0.08));
+  border: 1px solid rgba(109, 40, 217, 0.28);
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.1);
+}
+
+/* Light-mode legibility overrides for pastel accent badges, icons, and dark utility classes */
+:root[data-theme="light"] .text-violet-200,
+:root[data-theme="light"] .text-violet-300,
+:root[data-theme="light"] .text-violet-400 {
+  color: #6d28d9;
+}
+
+:root[data-theme="light"] .text-cyan-200,
+:root[data-theme="light"] .text-cyan-300,
+:root[data-theme="light"] .text-cyan-400 {
+  color: #0e7490;
+}
+
+:root[data-theme="light"] .text-emerald-200,
+:root[data-theme="light"] .text-emerald-300,
+:root[data-theme="light"] .text-emerald-400 {
+  color: #047857;
+}
+
+:root[data-theme="light"] .text-fuchsia-200,
+:root[data-theme="light"] .text-fuchsia-300,
+:root[data-theme="light"] .text-fuchsia-400 {
+  color: #a21caf;
+}
+
+:root[data-theme="light"] .text-purple-200,
+:root[data-theme="light"] .text-purple-300,
+:root[data-theme="light"] .text-purple-400 {
+  color: #7e22ce;
+}
+
+:root[data-theme="light"] .text-blue-200,
+:root[data-theme="light"] .text-blue-300,
+:root[data-theme="light"] .text-blue-400 {
+  color: #1d4ed8;
+}
+
+:root[data-theme="light"] .text-amber-200,
+:root[data-theme="light"] .text-amber-300,
+:root[data-theme="light"] .text-amber-400 {
+  color: #b45309;
+}
+
+:root[data-theme="light"] .text-red-200,
+:root[data-theme="light"] .text-red-300,
+:root[data-theme="light"] .text-red-400 {
+  color: #b91c1c;
+}
+
+:root[data-theme="light"] .text-slate-200,
+:root[data-theme="light"] .text-slate-300 {
+  color: #334155;
+}
+
+:root[data-theme="light"] .bg-white\/5,
+:root[data-theme="light"] .hover\:bg-white\/5:hover,
+:root[data-theme="light"] .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
+:root[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .border-white\/10,
+:root[data-theme="light"] .border-white\/15 {
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+:root[data-theme="light"] option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .zervix-gradient-border {
+  box-shadow: 0 12px 32px -12px rgba(30, 41, 59, 0.1);
+}
+
+/* 3D Perspective Cyber Floor Grid */
+.zervix-3d-grid {
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  bottom: -24%;
+  height: 58vh;
+  background-image:
+    linear-gradient(to right, rgba(139, 92, 246, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 211, 238, 0.12) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(680px) rotateX(68deg);
+  transform-origin: center bottom;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.75) 5%, rgba(0, 0, 0, 0.25) 45%, transparent 88%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.75) 5%, rgba(0, 0, 0, 0.25) 45%, transparent 88%);
+}
+
+:root[data-theme="light"] .zervix-3d-grid {
+  background-image:
+    linear-gradient(to right, rgba(109, 40, 217, 0.11) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(8, 145, 178, 0.1) 1px, transparent 1px);
+}
+
+.zervix-elevated {
+  background: var(--glass-elevated);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+}
+
+/* Smooth tactile feedback for interactive buttons and links */
+@media (prefers-reduced-motion: no-preference) {
+  button,
+  a {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+.zervix-gradient-border {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.zervix-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.45),
+    rgba(34, 211, 238, 0.25),
+    rgba(217, 70, 239, 0.3)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Subtle ambient radial backdrop */
+.zervix-ambient-bg {
+  background-image:
+    radial-gradient(ellipse 65% 40% at 15% 0%, rgba(139, 92, 246, 0.14), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 85% 10%, rgba(34, 211, 238, 0.1), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 50% 100%, rgba(168, 85, 247, 0.08), transparent 70%);
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) .zervix-ambient-bg,
+:root[data-theme="light"] .zervix-ambient-bg {
+  background-image:
+    radial-gradient(ellipse 65% 40% at 15% 0%, rgba(139, 92, 246, 0.1), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 85% 10%, rgba(34, 211, 238, 0.09), transparent 70%);
+}
+
+/* Native dialog modal scroll lock & smooth top-layer reveal without layout shift */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog:modal[open] {
+    animation: zervix-dialog-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes zervix-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+}
+
+dialog::backdrop {
+  background: rgba(5, 5, 9, 0.72);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+/* Accessible focus ring */
+:where(a:any-link, button, input, select, textarea):focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Responsive container-queried table support */
+.zervix-table-wrap {
+  overflow-x: auto;
+  max-inline-size: 100%;
+  container-type: inline-size;
+}
+
+/* Gentle shield float animation honoring reduced motion */
+@keyframes zervix-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes zervix-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes zervix-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-zervix-float {
+    animation: zervix-float 6s ease-in-out infinite;
+  }
+
+  .animate-zervix-spin {
+    animation: zervix-spin-slow 24s linear infinite;
+  }
+
+  .animate-zervix-spin-reverse {
+    animation: zervix-spin-reverse 18s linear infinite;
+  }
+}
+
+/* Legacy webkit scrollbar fallback */
+@supports not (scrollbar-color: auto) {
+  * {
+    scrollbar-width: auto;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+}
